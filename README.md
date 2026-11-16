@@ -3,8 +3,11 @@
 分布比较与偏离定位的真实业务分析小型项目。完整模拟客户、痛点、上下游、算法公式与一天工作剧本见 [BUSINESS.md](BUSINESS.md)。
 
 ## 模块与业务流程
-数据接入（JSON/CSV、字段验证、批次指纹）→ 参数化分析（异步 Python worker）→ 结果复核（指标、图形、明细、解释、批准）→ 定时分发（本地收件箱、CSV/JSON、SHA256）；另有业务总览和审计轨迹。
-三个贯穿全栈的实体：Dataset 数据批次、Job 分析任务、Report 分发计划；辅助 User、Audit、Delivery。
+数据接入（JSON/CSV、字段验证、批次指纹）→ 参数化分析（异步 Python worker）→ 结果复核（指标、图形、明细、解释、批准）→ 整改闭环（派单、领包、离线回传合并、裁定、验收）→ 定时分发（本地收件箱、CSV/JSON、SHA256）；另有业务总览和审计轨迹。
+三个贯穿全栈的实体：Dataset 数据批次、Job 分析任务、Report 分发计划；整改闭环另有 RectificationOrder 整改单、RectificationMeasure 措施、RectificationPackage 填写包、RectificationDispute 争议、RectificationEvent 取舍记录；辅助 User、Audit、Delivery。
+
+### 整改闭环
+从获批调查建立整改单并分派措施到责任人；责任人领取填写包（领取时内容冻结为对照基线）离线填写后回传。回传按三向合并：对照领取时与线上现值，互不影响的修改各自保留；同项异改或已撤销措施的回传修改转待裁定，线上值不被覆盖。重新指派使原责任人未回传包失效；裁定与在线改动并发时按措施版本号拒绝覆盖新值；争议未清不验收；验收固定全部措施与证据快照；退回整改开启新一轮，旧包不能关闭新一轮。回传按内容指纹幂等：中断可直接重试，原包重试不重复登记，同包换内容拒收。每次合并的取舍依据记录在整改单事件流中。
 
 ## 快速启动
 ```bash
@@ -18,8 +21,8 @@ docker compose exec -T backend python -m scripts.seed_demo
 ## 演示账号与权限
 |账号|密码|真实权限|
 |---|---|---|
-|admin@demo.local|Demo123!|接入、执行、批准、分发、暂停、读取与下载|
-|analyst@demo.local|Demo123!|接入、执行、读取与下载；不能批准或安排分发|
+|admin@demo.local|Demo123!|接入、执行、批准、分发、暂停、整改派单/裁定/验收、读取与下载|
+|analyst@demo.local|Demo123!|接入、执行、整改领包/回传/在线改动、读取与下载；不能批准、裁定或验收|
 |viewer@demo.local|Demo123!|只读与下载|
 
 ## 技术与本地开发

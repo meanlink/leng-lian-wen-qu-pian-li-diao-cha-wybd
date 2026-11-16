@@ -8,3 +8,17 @@ class JobStatus(str, Enum):
     running = 'running'
     completed = 'completed'
     failed = 'failed'
+class RectOrderStatus(str, Enum):
+    open = 'open'
+    accepted = 'accepted'
+class MeasureStatus(str, Enum):
+    open = 'open'
+    done = 'done'
+    revoked = 'revoked'
+class PackageStatus(str, Enum):
+    claimed = 'claimed'
+    returned = 'returned'
+    void = 'void'
+class DisputeStatus(str, Enum):
+    pending = 'pending'
+    resolved = 'resolved'
